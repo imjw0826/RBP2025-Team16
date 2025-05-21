@@ -39,7 +39,7 @@ class DetermineColor(Node):
             # msg.frame_id = '0'  # STOP
             # msg.frame_id = '-1' # CW 
             black_lower  = np.array([0, 0, 0])
-            black_upper  = np.array([180, 255, 70])
+            black_upper  = np.array([180, 255, 80])
 
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
             
@@ -56,7 +56,7 @@ class DetermineColor(Node):
             cv2.drawContours(roi_mask, [c], -1, 255, thickness=-1)
 
             roi_mask = cv2.erode(roi_mask, kernel, iterations=1)
-            cv2.drawContours(img, [c], -1, (0, 0, 255), thickness=-1)
+            #cv2.drawContours(img, [c], -1, (0, 0, 255), thickness=-1)
             cv2.imshow('Image', img)
             cv2.waitKey(1)
 
@@ -79,7 +79,7 @@ class DetermineColor(Node):
             else:
                 msg.frame_id = '0'
             # msg.frame_id = str(r_count)+'.'+str(b_count)+'.'+str(g_count)
-            # print(msg.frame_id)
+            print(msg.frame_id)
             
             self.color_pub.publish(msg)
             
