@@ -14,7 +14,7 @@ import cv2
 class DetermineColor(Node):
     def __init__(self):
         super().__init__('color_detector')
-        self.image_sub = self.create_subscription(Image, '/color', self.callback, 10)
+        self.image_sub = self.create_subscription(Image, '/camera/color/image_raw', self.callback, 10)
         self.color_pub = self.create_publisher(Header, '/rotate_cmd', 10)
         self.bridge = CvBridge()
         self.count = 0
@@ -29,6 +29,9 @@ class DetermineColor(Node):
             msg = Header()
             msg = data.header
             msg.frame_id = '0'  # default: STOP
+            
+            cv2.imshow('Image', img)
+            cv2.waitKey(1)
     
             # determine background color
             # determine the color and assing +1, 0, or, -1 for frame_id
@@ -36,7 +39,7 @@ class DetermineColor(Node):
             # msg.frame_id = '0'  # STOP
             # msg.frame_id = '-1' # CW 
             black_lower  = np.array([0, 0, 0])
-            black_upper  = np.array([0, 0, 35])
+            black_upper  = np.array([180, 255, 70])
 
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
             
@@ -45,15 +48,17 @@ class DetermineColor(Node):
             mask_black = cv2.inRange(hsv, black_lower, black_upper)
             mask_black = cv2.morphologyEx(mask_black, cv2.MORPH_CLOSE, kernel, iterations=2)
 
-            contours, _ = cv2.findContours(mask_black, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours, hier = cv2.findContours(mask_black, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             if not contours:
-                msg.frame_id = '0'
+                msg.frame_id = '2'
             c = max(contours, key=cv2.contourArea)
-
             roi_mask = np.zeros_like(mask_black)
             cv2.drawContours(roi_mask, [c], -1, 255, thickness=-1)
 
             roi_mask = cv2.erode(roi_mask, kernel, iterations=1)
+            cv2.drawContours(img, [c], -1, (0, 0, 255), thickness=-1)
+            cv2.imshow('Image', img)
+            cv2.waitKey(1)
 
             mask_red = cv2.inRange(hsv, (0, 50, 50), (20, 255, 255)) | cv2.inRange(hsv, (160, 50, 50), (180, 255, 255))
             mask_green = cv2.inRange(hsv, (40, 50, 50), (80, 255, 255))
@@ -73,7 +78,9 @@ class DetermineColor(Node):
                 msg.frame_id = '+1'
             else:
                 msg.frame_id = '0'
-
+            # msg.frame_id = str(r_count)+'.'+str(b_count)+'.'+str(g_count)
+            # print(msg.frame_id)
+            
             self.color_pub.publish(msg)
             
             
