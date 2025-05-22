@@ -50,34 +50,36 @@ class DetermineColor(Node):
 
             contours, hier = cv2.findContours(mask_black, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             if not contours:
-                msg.frame_id = '2'
-            c = max(contours, key=cv2.contourArea)
-            roi_mask = np.zeros_like(mask_black)
-            cv2.drawContours(roi_mask, [c], -1, 255, thickness=-1)
-
-            roi_mask = cv2.erode(roi_mask, kernel, iterations=1)
-            #cv2.drawContours(img, [c], -1, (0, 0, 255), thickness=-1)
-            cv2.imshow('Image', img)
-            cv2.waitKey(1)
-
-            mask_red = cv2.inRange(hsv, (0, 50, 50), (20, 255, 255)) | cv2.inRange(hsv, (160, 50, 50), (180, 255, 255))
-            mask_green = cv2.inRange(hsv, (40, 50, 50), (80, 255, 255))
-            mask_blue = cv2.inRange(hsv, (100, 50, 50), (140, 255, 255))
-
-            red_in_roi   = cv2.bitwise_and(mask_red,   roi_mask)
-            green_in_roi = cv2.bitwise_and(mask_green, roi_mask)
-            blue_in_roi  = cv2.bitwise_and(mask_blue,  roi_mask)
-
-            r_count = cv2.countNonZero(red_in_roi)
-            g_count = cv2.countNonZero(green_in_roi)
-            b_count = cv2.countNonZero(blue_in_roi)
-
-            if r_count > g_count and r_count > b_count:
-                msg.frame_id = '-1'
-            elif b_count > r_count and b_count > g_count:
-                msg.frame_id = '+1'
-            else:
                 msg.frame_id = '0'
+            else:
+                c = max(contours, key=cv2.contourArea)
+                roi_mask = np.zeros_like(mask_black)
+                cv2.drawContours(roi_mask, [c], -1, 255, thickness=-1)
+
+                roi_mask = cv2.erode(roi_mask, kernel, iterations=1)
+                #cv2.drawContours(img, [c], -1, (0, 0, 255), thickness=-1)
+                cv2.imshow('Image', img)
+                cv2.waitKey(1)
+
+                mask_red = cv2.inRange(hsv, (0, 50, 50), (20, 255, 255)) | cv2.inRange(hsv, (160, 50, 50), (180, 255, 255))
+                mask_green = cv2.inRange(hsv, (40, 50, 50), (80, 255, 255))
+                mask_blue = cv2.inRange(hsv, (100, 50, 50), (140, 255, 255))
+
+                red_in_roi   = cv2.bitwise_and(mask_red,   roi_mask)
+                green_in_roi = cv2.bitwise_and(mask_green, roi_mask)
+                blue_in_roi  = cv2.bitwise_and(mask_blue,  roi_mask)
+
+                r_count = cv2.countNonZero(red_in_roi)
+                g_count = cv2.countNonZero(green_in_roi)
+                b_count = cv2.countNonZero(blue_in_roi)
+
+                if r_count > g_count and r_count > b_count:
+                    msg.frame_id = '-1'
+                elif b_count > r_count and b_count > g_count:
+                    msg.frame_id = '+1'
+                else:
+                    msg.frame_id = '0'
+            
             # msg.frame_id = str(r_count)+'.'+str(b_count)+'.'+str(g_count)
             print(msg.frame_id)
             
